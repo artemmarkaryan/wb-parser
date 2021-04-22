@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"io"
+	"log"
 	"net/http"
 )
 
 func GetHTML(sku domain.Sku) (body io.ReadCloser, err error) {
+	log.Print("fetching ", sku.GetUrl())
 	resp, err := http.Get(sku.GetUrl())
 	if err != nil {
 		return

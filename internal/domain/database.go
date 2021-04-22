@@ -1,9 +1,11 @@
 package domain
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
+	//_ "github.com/jackc/pgx"
+	//sql "github.com/jmoiron/sqlx"
+	"database/sql"
 	_ "github.com/lib/pq"
 	"log"
 	"os"

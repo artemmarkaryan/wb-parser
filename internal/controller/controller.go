@@ -1,38 +1,57 @@
 package controller
 
 import (
+	"encoding/json"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"github.com/artemmarkaryan/wb-parser/internal/interactor"
 	"github.com/artemmarkaryan/wb-parser/internal/parser"
 	"log"
+	"os"
 )
 
-func Parse() {
+func Parse(toFile string) {
+
+	err := os.WriteFile(
+		toFile,
+		[]byte{},
+		0666,
+	)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	skus, err := domain.GetAllSku()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var infos []domain.SkuInfo
+	var infos []map[string]string
+
 	for _, sku := range skus {
 		html, err := interactor.GetHTML(sku)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 
 		info, err := parser.GetInfo(html)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 
-		for title, value := range info {
-			infos = append(infos, domain.SkuInfo{
-				SkuId: sku.GetId(),
-				Title: title,
-				Value: value,
-			})
-		}
+		info["id"] = sku.GetId()
+		info["url"] = sku.GetUrl()
+		infos = append(infos, info)
 	}
 
-	log.Print(infos)
+	infoJSON, err := json.Marshal(infos)
+
+	err = os.WriteFile(
+		toFile,
+		infoJSON,
+		0666,
+	)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 }

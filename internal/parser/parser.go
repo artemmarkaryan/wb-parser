@@ -22,6 +22,7 @@ func GetInfo(body io.ReadCloser) (infos map[string]string, err error) {
 			infos[title] = value
 		}
 	})
+
 	return
 }
 
