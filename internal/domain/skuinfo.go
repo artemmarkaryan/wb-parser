@@ -1,7 +1,7 @@
 package domain
 
 type SkuInfo struct {
-	SkuId int
+	SkuId string
 	Title string
 	Value string
 }

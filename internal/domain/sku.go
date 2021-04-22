@@ -1,13 +1,13 @@
 package domain
 
 type Sku struct {
-	Id  int
+	Id  string
 	Url string
 }
 
-func (s *Sku) GetUrl() string {
-	return s.Url
-}
+func (s *Sku) GetId() string { return s.Id }
+func (s *Sku) GetUrl() string { return s.Url }
+
 
 func GetAllSku() (skus []Sku, err error) {
 	db, err := NewDB()

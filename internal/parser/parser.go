@@ -10,6 +10,7 @@ import (
 
 func GetInfo(body io.ReadCloser) (infos map[string]string, err error) {
 	doc, err := goquery.NewDocumentFromReader(body)
+	defer func() {_ = body.Close()}()
 	if err != nil {
 		return
 	}
