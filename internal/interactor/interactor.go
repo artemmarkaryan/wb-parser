@@ -1,38 +1,25 @@
+// interactor is an interface to database
 package interactor
 
-import "github.com/artemmarkaryan/wb-parser/internal/domain"
+import (
+	"errors"
+	"fmt"
+	"github.com/artemmarkaryan/wb-parser/internal/domain"
+	"io"
+	"net/http"
+)
 
-type Sku struct {
-	Id  int
-	Url string
-}
-
-type SkuInfo struct {
-	SkuId int
-	Title string
-	Value string
-}
-
-func GetAllSku() (skus []Sku, err error) {
-	db, err := domain.NewDB()
+func GetHTML(sku domain.Sku) (body io.ReadCloser, err error) {
+	resp, err := http.Get(sku.GetUrl())
 	if err != nil {
 		return
 	}
-	defer func() { _ = db.Close() }()
+	defer func() {_ = resp.Body.Close()}()
 
-	query := "select * from sku"
-	rows, err := db.Query(query)
-	if err != nil {
-		return
+	if resp.StatusCode != 200 {
+		err = errors.New(
+			fmt.Sprintf("response to %v resuled in %v", sku.Url, resp.StatusCode),
+		)
 	}
-
-	for rows.Next() {
-		newSku := Sku{}
-		err = rows.Scan(&newSku.Id, &newSku.Url)
-		if err != nil {
-			return
-		}
-		skus = append(skus, newSku)
-	}
-	return
+	return resp.Body, err
 }
