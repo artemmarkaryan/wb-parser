@@ -15,4 +15,5 @@ func main() {
 	}
 
 	controller.Parse("dumps/dump"+strconv.Itoa(int(time.Now().Unix()))+".json")
+
 }

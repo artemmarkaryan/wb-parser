@@ -6,3 +6,4 @@
 .env
 .idea
 dumps
+/wb-parser-ids.csv

@@ -10,9 +10,9 @@ import (
 	"net/http"
 )
 
-func GetHTML(sku domain.Sku) (body io.ReadCloser, err error) {
-	log.Print("fetching ", sku.GetUrl())
-	resp, err := http.Get(sku.GetUrl())
+func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.ReadCloser, err error) {
+	log.Print("requesting ", sku.GetUrl())
+	resp, err := httpClient.Get(sku.GetUrl())
 	if err != nil {
 		return
 	}
