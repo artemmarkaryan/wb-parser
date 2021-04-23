@@ -1,17 +1,45 @@
 package controller
 
 import (
+	"errors"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"github.com/artemmarkaryan/wb-parser/internal/interactor"
 	"github.com/artemmarkaryan/wb-parser/internal/parser"
 	"github.com/artemmarkaryan/wb-parser/pkg/make-http-client"
 	"github.com/artemmarkaryan/wb-parser/pkg/map-to-csv"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 )
 
-func Parse(filename string) {
-	skus, err := domain.GetAllSku()
+func ProcessFile(fromFile, toFile string) (err error) {
+	// check if fromFile exists
+	f, err := os.OpenFile(fromFile, os.O_RDONLY, 0777)
+	if err != nil {
+		return
+	} else {
+		_ = f.Close()
+	}
+
+	// match getter by extension
+	extension := filepath.Ext(fromFile)
+	var getter interactor.SkuGetter
+	switch extension {
+	case "csv":
+		getter = interactor.NewCSVSkuGetter(fromFile)
+	default:
+		return errors.New("unknown file extension")
+	}
+
+	// call parser
+	parse(toFile, getter)
+
+	return
+}
+
+func parse(toFile string, getter interactor.SkuGetter) {
+	skus, err := getter.GetSkus()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,15 +77,7 @@ func Parse(filename string) {
 				infos = append(infos, info)
 			}
 
-			err = mapToCSV.ConvertMany(infos, filename)
-			//infoJSON, err := json.Marshal(infos)
-			//
-			//err = os.WriteFile(
-			//	filename,
-			//	infoJSON,
-			//	0666,
-			//)
-
+			err = mapToCSV.ConvertMany(infos, toFile)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -66,4 +86,3 @@ func Parse(filename string) {
 		}
 	}
 }
-

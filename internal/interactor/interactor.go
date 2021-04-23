@@ -10,6 +10,26 @@ import (
 	"net/http"
 )
 
+// get sku instances from some source
+type SkuGetter interface {
+	GetSkus() ([]domain.Sku, error)
+}
+
+type CSVSkuGetter struct{
+	filename string
+}
+
+func NewCSVSkuGetter(filename string) *CSVSkuGetter {
+	return &CSVSkuGetter{filename: filename}
+}
+
+func (g CSVSkuGetter) GetSkus() ([]domain.Sku, error) {
+	panic("implement me")
+}
+
+// todo: make excel sku getter
+
+// retrieve html data
 func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.ReadCloser, err error) {
 	log.Print("requesting ", sku.GetUrl())
 	resp, err := httpClient.Get(sku.GetUrl())
