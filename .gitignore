@@ -6,4 +6,6 @@
 .env
 .idea
 dumps
-/wb-parser-ids.csv
+go.mod
+go.sum
+wb-parser-ids.csv
