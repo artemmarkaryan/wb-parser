@@ -12,7 +12,7 @@ func NewHTTPClient(maxConnections int) *http.Client {
 	t.MaxIdleConnsPerHost = maxConnections
 
 	return &http.Client{
-		Timeout:   10 * time.Second,
+		Timeout:   time.Minute,
 		Transport: t,
 	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/config"
 	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	"log"
@@ -16,10 +15,14 @@ func main() {
 	}
 
 	var fromFile string
-	_, err = fmt.Scanln(fromFile)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	//fmt.Println("Перенеси сюда нужный файл (.csv)")
+	//_, err = fmt.Scanln(&fromFile)
+	//if err != nil {
+	//	log.Fatal(err.Error())
+	//}
+
+	// mockup
+	fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
 
 	err = controller.ProcessFile(
 		fromFile,

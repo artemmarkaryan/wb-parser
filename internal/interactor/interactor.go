@@ -2,12 +2,15 @@
 package interactor
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 // get sku instances from some source
@@ -23,8 +26,33 @@ func NewCSVSkuGetter(filename string) *CSVSkuGetter {
 	return &CSVSkuGetter{filename: filename}
 }
 
-func (g CSVSkuGetter) GetSkus() ([]domain.Sku, error) {
-	panic("implement me")
+func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
+	f, err := os.OpenFile(g.filename, os.O_RDONLY, 0777)
+	if err != nil {
+		return
+	} else {
+		defer func() {_ = f.Close()}()
+	}
+
+	reader := csv.NewReader(f)
+	reader.Comma = ';'
+	skuStrings, err := reader.ReadAll()
+	if err != nil {
+		return
+	}
+
+	for _, record := range skuStrings {
+		log.Print(record)
+		if len(record) != 2 {
+			return nil, errors.New("В строке должно быть ровно значения, а сейчас " + strconv.Itoa(len(record)))
+		}
+		skus = append(skus, domain.Sku{
+			Id:  record[0],
+			Url: record[1],
+		})
+	}
+
+	return
 }
 
 // todo: make excel sku getter

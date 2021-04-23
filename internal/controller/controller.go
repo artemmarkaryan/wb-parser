@@ -26,7 +26,7 @@ func ProcessFile(fromFile, toFile string) (err error) {
 	extension := filepath.Ext(fromFile)
 	var getter interactor.SkuGetter
 	switch extension {
-	case "csv":
+	case ".csv":
 		getter = interactor.NewCSVSkuGetter(fromFile)
 	default:
 		return errors.New("unknown file extension")
