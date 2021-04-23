@@ -14,6 +14,5 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	controller.Parse("dumps/dump"+strconv.Itoa(int(time.Now().Unix()))+".json")
-
+	controller.Parse("dumps/dump"+strconv.Itoa(int(time.Now().Unix())))
 }
