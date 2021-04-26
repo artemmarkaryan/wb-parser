@@ -34,9 +34,7 @@ func ProcessFile(fromFile, toFile string) (err error) {
 
 	// call parser
 	err = parse(toFile, getter)
-	if err != nil {
-		return
-	}
+	log.Print("finished parsing")
 	return
 }
 
@@ -46,7 +44,9 @@ func parse(toFile string, getter interactor.SkuGetter) (err error) {
 		return
 	}
 
+	var infos []map[string]string
 	infoChan := make(chan map[string]string, len(skus))
+	errChan := make(chan error, len(skus))
 
 	for _, sku := range skus {
 		httpClient := makeHTTPClient.NewHTTPClient(len(skus))
@@ -56,12 +56,12 @@ func parse(toFile string, getter interactor.SkuGetter) (err error) {
 				httpClient,
 			)
 			if err != nil {
-				return
+				errChan <- err
 			}
 
 			info, err := parser.GetInfo(html)
 			if err != nil {
-				return
+				errChan <- err
 			}
 
 			info["id"] = sku.GetId()
@@ -69,16 +69,17 @@ func parse(toFile string, getter interactor.SkuGetter) (err error) {
 			infoChan <- info
 		}(sku)
 	}
-	for {
-		time.Sleep(time.Second)
-		log.Printf("Recieved %v of %v", len(infoChan), cap(infoChan))
-		if len(infoChan) == cap(infoChan) {
-			close(infoChan)
-			var infos []map[string]string
-			for info := range infoChan {
-				infos = append(infos, info)
-			}
 
+	for {
+		time.Sleep(time.Second/50)
+		select {
+		case err := <- errChan:
+			log.Print(err.Error())
+		case info := <- infoChan:
+			log.Printf("recieved from %v", info["url"])
+			infos = append(infos, info)
+		}
+		if len(infos) == len(skus) {
 			err = excel.ConvertAndSave(infos, toFile)
 			if err != nil {
 				return

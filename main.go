@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/artemmarkaryan/wb-parser/internal/config"
 	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	"log"
 	"path/filepath"
@@ -10,20 +8,17 @@ import (
 )
 
 func main() {
-	err := config.LoadDotEnv()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
+	var err error
 	var fromFile string
-	fmt.Println("Перенеси сюда нужный файл (.csv)")
-	_, err = fmt.Scanln(&fromFile)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+
+	//fmt.Println("Перенеси сюда нужный файл (.csv)")
+	//_, err := fmt.Scanln(&fromFile)
+	//if err != nil {
+	//	log.Fatal(err.Error())
+	//}
 
 	// mockup
-	//fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
+	fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
 	toFileDir := filepath.Dir(fromFile)
 	toFile := filepath.Join(
 		toFileDir,
@@ -35,6 +30,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-	time.Sleep(10 * time.Minute)
 }

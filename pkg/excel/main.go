@@ -2,6 +2,7 @@ package excel
 
 import (
 	"github.com/tealeg/xlsx"
+	"log"
 )
 
 func getKeys(maps *[]map[string]string) (keys []string) {
@@ -19,6 +20,7 @@ func getKeys(maps *[]map[string]string) (keys []string) {
 }
 
 func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
+	log.Print("Saving to .xlsx")
 	f := xlsx.NewFile()
 	sh, err := f.AddSheet("main")
 	if err != nil {

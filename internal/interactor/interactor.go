@@ -42,7 +42,6 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	}
 
 	for _, record := range skuStrings {
-		log.Print(record)
 		if len(record) != 2 {
 			return nil, errors.New("В строке должно быть ровно значения, а сейчас " + strconv.Itoa(len(record)))
 		}
@@ -61,6 +60,7 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.ReadCloser, err error) {
 	log.Print("requesting ", sku.GetUrl())
 	resp, err := httpClient.Get(sku.GetUrl())
+
 	if err != nil {
 		return
 	}
