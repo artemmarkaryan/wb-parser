@@ -23,7 +23,7 @@ func openFile(filename string) (f *os.File, err error) {
 	return os.OpenFile(filename + ".csv", os.O_RDWR|os.O_CREATE, 0754)
 }
 
-func ConvertMany(maps []map[string]string, filename string) (err error) {
+func ConvertAndSave(maps []map[string]string, filename string) (err error) {
 	f, err := openFile(filename)
 	if err != nil {
 		return

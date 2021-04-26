@@ -5,8 +5,8 @@ import (
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"github.com/artemmarkaryan/wb-parser/internal/interactor"
 	"github.com/artemmarkaryan/wb-parser/internal/parser"
+	"github.com/artemmarkaryan/wb-parser/pkg/excel"
 	"github.com/artemmarkaryan/wb-parser/pkg/make-http-client"
-	"github.com/artemmarkaryan/wb-parser/pkg/map-to-csv"
 	"log"
 	"os"
 	"path/filepath"
@@ -79,7 +79,7 @@ func parse(toFile string, getter interactor.SkuGetter) (err error) {
 				infos = append(infos, info)
 			}
 
-			err = mapToCSV.ConvertMany(infos, toFile)
+			err = excel.ConvertAndSave(infos, toFile)
 			if err != nil {
 				return
 			}
