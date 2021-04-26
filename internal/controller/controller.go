@@ -33,15 +33,17 @@ func ProcessFile(fromFile, toFile string) (err error) {
 	}
 
 	// call parser
-	parse(toFile, getter)
-
+	err = parse(toFile, getter)
+	if err != nil {
+		return
+	}
 	return
 }
 
-func parse(toFile string, getter interactor.SkuGetter) {
+func parse(toFile string, getter interactor.SkuGetter) (err error) {
 	skus, err := getter.GetSkus()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	infoChan := make(chan map[string]string, len(skus))
@@ -54,12 +56,12 @@ func parse(toFile string, getter interactor.SkuGetter) {
 				httpClient,
 			)
 			if err != nil {
-				log.Fatal(err.Error())
+				return
 			}
 
 			info, err := parser.GetInfo(html)
 			if err != nil {
-				log.Fatal(err.Error())
+				return
 			}
 
 			info["id"] = sku.GetId()
@@ -79,10 +81,11 @@ func parse(toFile string, getter interactor.SkuGetter) {
 
 			err = mapToCSV.ConvertMany(infos, toFile)
 			if err != nil {
-				log.Fatal(err.Error())
+				return
 			}
 
 			break
 		}
 	}
+	return
 }

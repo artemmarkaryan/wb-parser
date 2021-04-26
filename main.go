@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/config"
 	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	"log"
-	"strconv"
+	"path/filepath"
 	"time"
 )
 
@@ -15,19 +16,21 @@ func main() {
 	}
 
 	var fromFile string
-	//fmt.Println("Перенеси сюда нужный файл (.csv)")
-	//_, err = fmt.Scanln(&fromFile)
-	//if err != nil {
-	//	log.Fatal(err.Error())
-	//}
+	fmt.Println("Перенеси сюда нужный файл (.csv)")
+	_, err = fmt.Scanln(&fromFile)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// mockup
-	fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
+	//fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
+	toFileDir := filepath.Dir(fromFile)
+	toFile := filepath.Join(
+		toFileDir,
+		time.Now().Format("02-01_15:04:05") + ".csv",
+		)
 
-	err = controller.ProcessFile(
-		fromFile,
-		"dumps/dump"+strconv.Itoa(int(time.Now().Unix())),
-	)
+	err = controller.ProcessFile(fromFile, toFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
