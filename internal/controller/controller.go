@@ -10,7 +10,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func ProcessFile(fromFile, toFile string) (err error) {
@@ -34,7 +33,6 @@ func ProcessFile(fromFile, toFile string) (err error) {
 
 	// call parser
 	err = parse(toFile, getter)
-	log.Print("finished parsing")
 	return
 }
 
@@ -51,35 +49,37 @@ func parse(toFile string, getter interactor.SkuGetter) (err error) {
 	for _, sku := range skus {
 		httpClient := makeHTTPClient.NewHTTPClient(len(skus))
 		go func(sku domain.Sku) {
-			html, err := interactor.GetHTML(
+			body, err := interactor.GetHTML(
 				sku,
 				httpClient,
 			)
+
 			if err != nil {
 				errChan <- err
 			}
 
-			info, err := parser.GetInfo(html)
+			info, err := parser.GetInfo(body)
 			if err != nil {
 				errChan <- err
+			} else {
+				info["id"] = sku.GetId()
+				info["url"] = sku.GetUrl()
+				infoChan <- info
 			}
-
-			info["id"] = sku.GetId()
-			info["url"] = sku.GetUrl()
-			infoChan <- info
 		}(sku)
 	}
 
 	for {
-		time.Sleep(time.Second/50)
+		//time.Sleep(time.Second/50)
 		select {
 		case err := <- errChan:
 			log.Print(err.Error())
 		case info := <- infoChan:
-			log.Printf("recieved from %v", info["url"])
+			log.Printf("received from %v", info["url"])
 			infos = append(infos, info)
 		}
 		if len(infos) == len(skus) {
+			log.Print("All skus received")
 			err = excel.ConvertAndSave(infos, toFile)
 			if err != nil {
 				return

@@ -1,6 +1,7 @@
 package excel
 
 import (
+	"errors"
 	"github.com/tealeg/xlsx"
 	"log"
 )
@@ -46,5 +47,8 @@ func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
 	}
 
 	err = f.Save(toFilePath)
+	if err != nil {
+		err = errors.New("cant save .xlsx file: " + err.Error())
+	}
 	return
 }

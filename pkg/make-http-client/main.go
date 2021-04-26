@@ -10,9 +10,10 @@ func NewHTTPClient(maxConnections int) *http.Client {
 	t.MaxIdleConns = maxConnections
 	t.MaxConnsPerHost = maxConnections
 	t.MaxIdleConnsPerHost = maxConnections
+	t.TLSHandshakeTimeout = time.Minute
 
 	return &http.Client{
-		Timeout:   time.Minute,
+		Timeout:   10 * time.Minute,
 		Transport: t,
 	}
 }
