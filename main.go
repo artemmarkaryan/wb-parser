@@ -27,7 +27,8 @@ func main() {
 	toFileDir := filepath.Dir(fromFile)
 	toFile := filepath.Join(
 		toFileDir,
-		time.Now().Format("02-01_15:04:05") + ".csv",
+		time.Now().Format("02-01_15:04:05") + ".xlsx",
+		//+ filepath.Ext(fromFile),
 		)
 
 	err = controller.ProcessFile(fromFile, toFile)
