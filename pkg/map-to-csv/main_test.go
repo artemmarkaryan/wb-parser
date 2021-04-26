@@ -14,14 +14,14 @@ var (
 	basedir   = filepath.Dir(b)
 )
 
-func TestConvertMany(t *testing.T) {
+func TestConvertAndSave(t *testing.T) {
 	m := []map[string]string{
 		{"name": "b", "size": "m"},
 		{"name": "b", "package": "box"},
 	}
 	filename := basedir + "/" + strconv.Itoa(int(time.Now().Unix())) + ".csv"
 
-	err := ConvertMany(m, filename)
+	err := ConvertAndSave(m, filename)
 	if err != nil {
 		t.Error(err.Error())
 		return
