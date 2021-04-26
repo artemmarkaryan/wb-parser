@@ -1,9 +1,7 @@
 package parser
 
 import (
-	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html"
 	"io"
 	"strings"
 )
@@ -11,12 +9,8 @@ import (
 
 
 func GetInfo(body io.Reader) (infos map[string]string, err error) {
-	_, err = html.Parse(body)
-	if err != nil {
-		return nil, errors.New("cant parse body: " + err.Error())
-	}
-
 	doc, err := goquery.NewDocumentFromReader(body)
+
 	if err != nil {
 		return
 	}
