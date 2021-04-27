@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	timeF := time.Now()
+
 	var err error
 	var fromFile string
 
@@ -21,7 +23,7 @@ func main() {
 	toFileDir := filepath.Dir(fromFile)
 	toFile := filepath.Join(
 		toFileDir,
-		time.Now().Format("0201150405") + ".xlsx",
+		time.Now().Format("15-04") + ".xlsx",
 		//+ filepath.Ext(fromFile),
 		)
 
@@ -29,4 +31,6 @@ func main() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
+
+	log.Printf("Процесс занял %v", time.Now().Sub(timeF))
 }

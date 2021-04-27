@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -58,8 +58,8 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 // todo: make excel sku getter
 
 // retrieve html data
-func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.Reader, err error) {
-	log.Print("requesting ", sku.GetUrl())
+func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
+	log.Printf("requesting %v", sku.GetUrl())
 
 	req := http.Request{
 		Method: "GET",
@@ -79,7 +79,16 @@ func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.Reader, err error
 	if err != nil {
 		return
 	}
-	//defer func() { _ = resp.Body.Close() }()
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return
+	}
 
 	if resp.StatusCode != 200 {
 		err = errors.New(
@@ -87,6 +96,6 @@ func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.Reader, err error
 		)
 	}
 
-	body = resp.Body
-	return
+	return bodyBytes, err
 }
+
