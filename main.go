@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	"log"
 	"path/filepath"
@@ -8,26 +9,28 @@ import (
 )
 
 func main() {
+	timeF := time.Now()
+
 	var err error
 	var fromFile string
 
-	//fmt.Println("Перенеси сюда нужный файл (.csv)")
-	//_, err := fmt.Scanln(&fromFile)
-	//if err != nil {
-	//	log.Fatal(err.Error())
-	//}
+	fmt.Println("Перенеси сюда нужный файл (.csv)")
+	_, err = fmt.Scanln(&fromFile)
+	if err != nil {
+		log.Panic(err.Error())
+	}
 
-	// mockup
-	fromFile = `/Users/artemmarkaryan/Desktop/wb-parser-ids.csv`
 	toFileDir := filepath.Dir(fromFile)
 	toFile := filepath.Join(
 		toFileDir,
-		time.Now().Format("02-01_15:04:05") + ".xlsx",
+		time.Now().Format("15-04") + ".xlsx",
 		//+ filepath.Ext(fromFile),
 		)
 
 	err = controller.ProcessFile(fromFile, toFile)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Panic(err.Error())
 	}
+
+	log.Printf("Процесс занял %v", time.Now().Sub(timeF))
 }

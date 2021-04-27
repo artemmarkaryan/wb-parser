@@ -1,13 +1,19 @@
 package excel
 
 import (
+	"errors"
 	"github.com/tealeg/xlsx"
 	"log"
 )
 
-func getKeys(maps *[]map[string]string) (keys []string) {
+type Map interface {
+	Range() []interface{}
+	Get(interface{}) interface{}
+}
+
+func getKeys(maps []map[string]string) (keys []string) {
 	keyMap := make(map[string]bool)
-	for _, m := range *maps {
+	for _, m := range maps {
 		for k := range m {
 			keyMap[k] = true
 		}
@@ -27,7 +33,7 @@ func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
 		return
 	}
 	colNameRow := sh.AddRow()
-	keys := getKeys(&maps)
+	keys := getKeys(maps)
 	for _, k := range keys {
 		c := colNameRow.AddCell()
 		c.Value = k
@@ -46,5 +52,8 @@ func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
 	}
 
 	err = f.Save(toFilePath)
+	if err != nil {
+		err = errors.New("cant save .xlsx file: " + err.Error())
+	}
 	return
 }

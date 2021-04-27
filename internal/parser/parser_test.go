@@ -1,17 +1,18 @@
 package parser
 
 import (
-	"github.com/artemmarkaryan/wb-parser/internal/config"
+	"io/ioutil"
 	"net/http"
 	"testing"
 )
 
 func TestGetInfo(t *testing.T) {
-
-	_ = config.LoadDotEnv()
 	resp, _ := http.Get("https://www.wildberries.ru/catalog/6031342/detail.aspx")
+	t.Logf(resp.Status)
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
 
-	infos, err := GetInfo(resp.Body)
+	t.Logf("bytes: %v", string(bodyBytes[:100]))
+	infos, err := GetInfo(bodyBytes)
 
 	for title, value := range infos {
 		t.Logf("{%q: %q}", title, value)

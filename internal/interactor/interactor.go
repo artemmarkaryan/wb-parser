@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -18,7 +19,7 @@ type SkuGetter interface {
 	GetSkus() ([]domain.Sku, error)
 }
 
-type CSVSkuGetter struct{
+type CSVSkuGetter struct {
 	filename string
 }
 
@@ -31,7 +32,7 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	if err != nil {
 		return
 	} else {
-		defer func() {_ = f.Close()}()
+		defer func() { _ = f.Close() }()
 	}
 
 	reader := csv.NewReader(f)
@@ -57,19 +58,44 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 // todo: make excel sku getter
 
 // retrieve html data
-func GetHTML(sku domain.Sku, httpClient *http.Client) (body io.ReadCloser, err error) {
-	log.Print("requesting ", sku.GetUrl())
-	resp, err := httpClient.Get(sku.GetUrl())
+func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
+	log.Printf("requesting %v", sku.GetUrl())
+
+	req := http.Request{
+		Method: "GET",
+		Host:   "www.wildberries.ru",
+	}
+	req.URL, err = url.Parse(sku.GetUrl())
+	if err != nil {
+		return nil, err
+	}
+	req.Header = http.Header{
+		"User-Agent": []string{"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0"},
+		"Accept": []string{"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
+		"Connection": []string{"keep-alive"},
+	}
+	resp, err := httpClient.Do(&req)
 
 	if err != nil {
 		return
 	}
-	//defer func() {_ = resp.Body.Close()}()
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return
+	}
 
 	if resp.StatusCode != 200 {
 		err = errors.New(
 			fmt.Sprintf("response to %v resuled in %v", sku.Url, resp.StatusCode),
 		)
 	}
-	return resp.Body, err
+
+	return bodyBytes, err
 }
+

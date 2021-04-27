@@ -1,16 +1,16 @@
 package parser
 
 import (
+	"bytes"
 	"github.com/PuerkitoBio/goquery"
-	"io"
 	"strings"
 )
 
 
 
-func GetInfo(body io.ReadCloser) (infos map[string]string, err error) {
-	doc, err := goquery.NewDocumentFromReader(body)
-	defer func() {_ = body.Close()}()
+func GetInfo(body []byte) (infos map[string]string, err error) {
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
+
 	if err != nil {
 		return
 	}
@@ -22,6 +22,10 @@ func GetInfo(body io.ReadCloser) (infos map[string]string, err error) {
 			infos[title] = value
 		}
 	})
+	infos["Цена"] = doc.Find(".final-cost").Text()
+	infos["Старая цена"] = doc.Find(".old-price").Children().Text()
+	infos["Описание"] = doc.Find(".description-text").Children().Text()
+
 
 	return
 }
