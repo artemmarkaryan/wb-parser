@@ -11,13 +11,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-	"sync"
 	"time"
 )
 
-const buffSizeUpperBound = 10
-const coolDown = time.Second / 10
+const poolSize = 10
+const coolDown = time.Second / 50
 
 type Info map[string]string
 
@@ -35,7 +33,7 @@ func ProcessFile(fromFile, toFile string) (err error) {
 		return
 	}
 
-	err = parse(toFile, getter)
+	parse(toFile, getter)
 	return
 }
 
@@ -61,102 +59,61 @@ func defineGetter(file string) (getter interactor.SkuGetter, err error) {
 	return
 }
 
-func parse(toFile string, getter interactor.SkuGetter) (err error) {
-	var infos []Info
-	var fails []d.Sku
-	allSku, err := getter.GetSkus()
-	fails, err = processSkuArr(allSku, &infos)
-	unfixed, err := processSkuArr(fails, &infos)
-	if err != nil {
-		return
-	}
-	if len(unfixed) > 0 {
-		return errors.New("Остались необработанными: " + func() string {
-			var urls []string
-			for _, sku := range unfixed {
-				urls = append(urls, sku.GetUrl())
-			}
-			return strings.Join(urls, "\n")
-		}())
-	}
-
-	func() (ms []map[string]string) {
-		for _, info := range infos {
-			ms = append(ms, info)
+func parse(toFile string, getter interactor.SkuGetter) {
+	//var pool []func(chan d.Sku, chan Info, chan error)
+	allSku, _ := getter.GetSkus()
+	skuCh := make(chan d.Sku, len(allSku))
+	infoCh := make(chan Info, len(allSku))
+	errCh := make(chan error, len(allSku))
+	client := makeHTTPClient.NewHTTPClient(len(allSku))
+	go func() {
+		for _, s := range allSku {
+			skuCh <- s
 		}
-		return
-	}()
+	}() // put sku in channel
 
-	err = excel.ConvertAndSave(
+	for i := 0; i < poolSize; i++ {
+		num := i
+		go func(sCh chan d.Sku, iCh chan Info, eCh chan error) {
+			for sku := range sCh {
+				makeRequest(sku, client, iCh, eCh)
+				log.Printf("goriutine #%v: sku #%v", num, sku.GetId())
+				time.Sleep(coolDown)
+			}
+		} (skuCh, infoCh, errCh)
+	} // get sku from channel; put to result channels
+
+	var infoArr []Info
+	var rcv int
+	// read from result channel
+	for rcv < len(allSku) {
+			select {
+			case i := <-infoCh:
+				infoArr = append(infoArr, i)
+				rcv++
+			case e := <-errCh:
+				log.Print(e.Error())
+				rcv++
+			}
+		}
+	_ = excel.ConvertAndSave(
 		// convert infos to map[string]string
 		func() (ms []map[string]string) {
-			for _, info := range infos {
+			for _, info := range infoArr {
 				ms = append(ms, info)
 			}
 			return
 		}(),
 		toFile,
 	)
+	return
+}
+
+func makeRequest(sku d.Sku, client *http.Client, iCh chan Info, eCh chan error) {
+	body, err := interactor.GetHTML(sku, client)
 	if err != nil {
+		eCh <- err
 		return
-	}
-
-	return
-}
-
-func processSkuArr(skuArr []d.Sku, infos *[]Info) (fails []d.Sku, err error) {
-	allSkuBuffered := splitSkuArr(skuArr, buffSizeUpperBound)
-
-	wg := sync.WaitGroup{}
-
-	for i, buffer := range allSkuBuffered {
-		buffSize := len(buffer)
-		time.Sleep(coolDown)
-		log.Printf("Processing values %v - %v", i*buffSize+1, (i+1)*buffSize)
-
-		infoChan := make(chan Info, buffSize)
-		failChan := make(chan d.Sku, buffSize)
-		errChan := make(chan error, buffSize)
-
-		httpClient := makeHTTPClient.NewHTTPClient(buffSize)
-		for _, sku := range buffer {
-			wg.Add(1)
-			go makeRequest(sku, &wg, httpClient, infoChan, failChan, errChan)
-		}
-
-		wg.Wait()
-		close(infoChan)
-		close(failChan)
-		close(errChan)
-
-		for info := range infoChan {
-			*infos = append(*infos, info)
-			log.Printf("received from %v", info["url"])
-		}
-		for fail := range failChan {
-			fails = append(fails, fail)
-			log.Printf("%v failed", fail.GetUrl())
-		}
-		for err := range errChan {
-			log.Print(err.Error())
-		}
-	}
-
-	return
-}
-
-func makeRequest(
-	sku d.Sku,
-	wg *sync.WaitGroup,
-	httpClient *http.Client,
-	infoChan chan Info,
-	failChan chan d.Sku,
-	errChan chan error,
-) {
-	defer wg.Done()
-	body, err := interactor.GetHTML(sku, httpClient)
-	if err != nil {
-		errChan <- err
 	}
 
 	info, err := parser.GetInfo(body)
@@ -164,22 +121,24 @@ func makeRequest(
 	info["url"] = sku.GetUrl()
 
 	if err != nil {
-		failChan <- sku
-		errChan <- err
+		eCh <- err
+		return
 	} else {
 		info["id"] = sku.GetId()
 		info["url"] = sku.GetUrl()
-		infoChan <- info
+		iCh <- info
 	}
-}
 
-func splitSkuArr(input []d.Sku, size int) (result [][]d.Sku) {
-	n := len(input)
-	if len(input) <= size {
-		result = append(result, input)
-		return
-	}
-	result = append(result, splitSkuArr(input[:n/2], size)...)
-	result = append(result, splitSkuArr(input[n/2:], size)...)
 	return
 }
+
+//func splitSkuArr(input []d.Sku, size int) (result [][]d.Sku) {
+//	n := len(input)
+//	if len(input) <= size {
+//		result = append(result, input)
+//		return
+//	}
+//	result = append(result, splitSkuArr(input[:n/2], size)...)
+//	result = append(result, splitSkuArr(input[n/2:], size)...)
+//	return
+//}

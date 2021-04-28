@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	timeF := time.Now()
 
 	var err error
 	var fromFile string
@@ -19,13 +18,14 @@ func main() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
-
 	toFileDir := filepath.Dir(fromFile)
 	toFile := filepath.Join(
 		toFileDir,
 		time.Now().Format("15-04") + ".xlsx",
 		//+ filepath.Ext(fromFile),
 		)
+
+	timeF := time.Now()
 
 	err = controller.ProcessFile(fromFile, toFile)
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -59,7 +58,7 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 
 // retrieve html data
 func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
-	log.Printf("requesting %v", sku.GetUrl())
+	//log.Printf("requesting %v", sku.GetUrl())
 
 	req := http.Request{
 		Method: "GET",
