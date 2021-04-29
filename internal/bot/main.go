@@ -26,22 +26,26 @@ func Poll(b t.Bot) {
 			}
 			f, err := b.GetFile(upd.Message.Document.FileId)
 			if err != nil {
-				log.Panic(err.Error())
+				log.Print(err.Error())
+				break
 			}
 
 			content, err := b.GetFileContent(f.Result.FilePath)
 			if err != nil {
-				log.Panic(err.Error())
+				log.Print(err.Error())
+				break
 			}
 
 			buff, err := controller.ProcessData(&content)
 			if err != nil {
-				log.Panic(err.Error())
+				log.Print(err.Error())
+				break
 			}
 
 			err = b.SendFile(upd.Message.Chat.ID, buff)
 			if err != nil {
-				log.Panic(err.Error())
+				log.Print(err.Error())
+				break
 			}
 
 		case err := <-eCh:
