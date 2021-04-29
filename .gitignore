@@ -6,8 +6,6 @@
 .env
 .idea
 dumps
-go.mod
-go.sum
 wb-parser-ids.csv
 .exe
 bin/
