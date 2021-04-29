@@ -2,6 +2,7 @@
 package interactor
 
 import (
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -18,15 +19,16 @@ type SkuGetter interface {
 	GetSkus() ([]domain.Sku, error)
 }
 
-type CSVSkuGetter struct {
+// get sku instances from file
+type CSVFileSkuGetter struct {
 	filename string
 }
 
-func NewCSVSkuGetter(filename string) *CSVSkuGetter {
-	return &CSVSkuGetter{filename: filename}
+func NewCSVFileSkuGetter(filename string) *CSVFileSkuGetter {
+	return &CSVFileSkuGetter{filename: filename}
 }
 
-func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
+func (g CSVFileSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	f, err := os.OpenFile(g.filename, os.O_RDONLY, 0777)
 	if err != nil {
 		return
@@ -54,7 +56,36 @@ func (g CSVSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	return
 }
 
-// todo: make excel sku getter
+// get sku instances from file content
+type CSVBytesSkuGetter struct {
+	data []byte
+}
+
+func NewCSVBytesSkuGetter(data []byte) *CSVBytesSkuGetter {
+	return &CSVBytesSkuGetter{data: data}
+}
+
+func (g CSVBytesSkuGetter) GetSkus() (skus []domain.Sku, err error) {
+	reader := csv.NewReader(bytes.NewReader(g.data))
+	reader.Comma = ';'
+	skuStrings, err := reader.ReadAll()
+	if err != nil {
+		return
+	}
+
+	for _, record := range skuStrings {
+		if len(record) != 2 {
+			return nil, errors.New("В строке должно быть ровно значения, а сейчас " + strconv.Itoa(len(record)))
+		}
+		skus = append(skus, domain.Sku{
+			Id:  record[0],
+			Url: record[1],
+		})
+	}
+
+	return
+}
+
 
 // retrieve html data
 func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {

@@ -3,6 +3,7 @@ package excel
 import (
 	"errors"
 	"github.com/tealeg/xlsx"
+	"io"
 	"log"
 )
 
@@ -25,9 +26,8 @@ func getKeys(maps []map[string]string) (keys []string) {
 	return
 }
 
-func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
-	log.Print("Saving to .xlsx")
-	f := xlsx.NewFile()
+func Convert(maps []map[string]string) (f *xlsx.File, err error) {
+	f = xlsx.NewFile()
 	sh, err := f.AddSheet("main")
 	if err != nil {
 		return
@@ -49,6 +49,30 @@ func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
 				c.Value = ""
 			}
 		}
+	}
+	log.Print("✅ Converted")
+	return
+}
+
+func ConvertAndWrite(maps []map[string]string, writer io.Writer) (err error) {
+	f, err := Convert(maps)
+	if err != nil {
+		return
+	}
+
+	err = f.Write(writer)
+	if err != nil {
+		return
+	}
+
+	log.Print("✅ Wrote to buffer")
+	return
+}
+
+func ConvertAndSave(maps []map[string]string, toFilePath string) (err error) {
+	f, err := Convert(maps)
+	if err != nil {
+		return
 	}
 
 	err = f.Save(toFilePath)

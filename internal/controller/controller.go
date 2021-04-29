@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"errors"
 	d "github.com/artemmarkaryan/wb-parser/internal/domain"
 	"github.com/artemmarkaryan/wb-parser/internal/interactor"
@@ -28,12 +29,21 @@ func ProcessFile(fromFile, toFile string) (err error) {
 		return errors.New("Невозможно открыть файл: " + err.Error())
 	}
 
-	getter, err := defineGetter(fromFile)
+	getter, err := defineFileGetter(fromFile)
 	if err != nil {
 		return
 	}
 
-	parse(toFile, getter)
+	writeToFile(parse(getter), toFile)
+	return
+}
+
+func ProcessData(data *[]byte) (buff *bytes.Buffer, err error) {
+	getter := interactor.NewCSVBytesSkuGetter(*data)
+	infoArr := parse(getter)
+	var processedData []byte
+	buff = bytes.NewBuffer(processedData)
+	err = excel.ConvertAndWrite(infoArrToMap(infoArr), buff)
 	return
 }
 
@@ -49,17 +59,17 @@ func checkFile(file string) error {
 }
 
 // match getter by extension
-func defineGetter(file string) (getter interactor.SkuGetter, err error) {
+func defineFileGetter(file string) (getter interactor.SkuGetter, err error) {
 	switch filepath.Ext(file) {
 	case ".csv":
-		getter = interactor.NewCSVSkuGetter(file)
+		getter = interactor.NewCSVFileSkuGetter(file)
 	default:
 		return nil, errors.New("unknown file extension")
 	}
 	return
 }
 
-func parse(toFile string, getter interactor.SkuGetter) {
+func parse(getter interactor.SkuGetter) (infoArr []Info) {
 	//var pool []func(chan d.Sku, chan Info, chan error)
 	allSku, _ := getter.GetSkus()
 	skuCh := make(chan d.Sku, len(allSku))
@@ -83,7 +93,6 @@ func parse(toFile string, getter interactor.SkuGetter) {
 		} (skuCh, infoCh, errCh)
 	} // get sku from channel; put to result channels
 
-	var infoArr []Info
 	var rcv int
 	// read from result channel
 	for rcv < len(allSku) {
@@ -96,16 +105,21 @@ func parse(toFile string, getter interactor.SkuGetter) {
 				rcv++
 			}
 		}
+
+	return
+}
+
+func writeToFile(infoArr []Info, path string) {
 	_ = excel.ConvertAndSave(
-		// convert infos to map[string]string
-		func() (ms []map[string]string) {
-			for _, info := range infoArr {
-				ms = append(ms, info)
-			}
-			return
-		}(),
-		toFile,
+		infoArrToMap(infoArr),
+		path,
 	)
+}
+
+func infoArrToMap(infoArr []Info) (ms []map[string]string) {
+	for _, info := range infoArr {
+		ms = append(ms, info)
+	}
 	return
 }
 
