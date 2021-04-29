@@ -36,8 +36,13 @@ func Poll(b t.Bot) {
 				break
 			}
 
+			_ = b.SendMessage(upd.Message.Chat.ID, "Начал обработку")
 			buff, err := controller.ProcessData(&content)
 			if err != nil {
+				_ = b.SendMessage(
+					upd.Message.Chat.ID,
+					"Ошибка во время сбора данных: " + err.Error(),
+				)
 				log.Print(err.Error())
 				break
 			}
