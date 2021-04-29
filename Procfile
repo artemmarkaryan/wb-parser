@@ -1,1 +1,1 @@
-web: bin/wb_parser
+web: bin/app
