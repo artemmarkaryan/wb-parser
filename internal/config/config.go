@@ -1,9 +1,7 @@
 package config
 
 import (
-	"errors"
 	dotenv "github.com/joho/godotenv"
-	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -13,11 +11,7 @@ var (
 	basepath   = filepath.Dir(b)
 )
 
-func LoadDotEnv() (err error) {
-	_ = dotenv.Load(basepath + "/.env")
-	if os.Getenv("DATABASE_PASSWORD") == ""{
-		err = errors.New("env not loaded")
-	}
-	return
+func LoadDotEnv() error {
+	return dotenv.Load(basepath + "/.env")
 }
 
