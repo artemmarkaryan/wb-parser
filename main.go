@@ -9,7 +9,7 @@ import (
 func main() {
 	err := config.LoadDotEnv()
 	if err != nil {
-		log.Panic(err.Error())
+		log.Println(err.Error())
 	}
 
 	b := bot.NewBot()
