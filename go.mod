@@ -1,5 +1,5 @@
 module github.com/artemmarkaryan/wb-parser
-// +heroku goVersion <version>
+// +heroku goVersion 1.16
 go 1.16
 
 require (
