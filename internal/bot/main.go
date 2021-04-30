@@ -22,7 +22,10 @@ func Poll(b t.Bot) {
 		select {
 		case upd := <-uCh:
 			if upd.Message.Document.FileId == "" {
-				continue
+				err := b.SendMessage(upd.Message.Chat.ID, "😎")
+				if err != nil {
+					log.Print(err)
+				}
 			}
 			f, err := b.GetFile(upd.Message.Document.FileId)
 			if err != nil {
