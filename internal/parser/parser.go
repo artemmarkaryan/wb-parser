@@ -25,6 +25,7 @@ func GetInfo(body []byte) (infos map[string]string, err error) {
 	infos["Цена"] = doc.Find(".final-cost").Text()
 	infos["Старая цена"] = doc.Find(".old-price").Children().Text()
 	infos["Описание"] = doc.Find(".description-text").Children().Text()
+	infos["Состав"] = doc.Find(".j-consist").Text()
 
 
 	return
