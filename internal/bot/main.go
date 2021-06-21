@@ -27,6 +27,7 @@ func Poll(b t.Bot) {
 					log.Print(err)
 				}
 			}
+
 			f, err := b.GetFile(upd.Message.Document.FileId)
 			if err != nil {
 				log.Print(err.Error())
@@ -40,7 +41,7 @@ func Poll(b t.Bot) {
 			}
 
 			_ = b.SendMessage(upd.Message.Chat.ID, "Начал обработку")
-			buff, err := controller.ProcessData(&content)
+			buff, err := controller.NewWildberriesController().ProcessBytes(&content)
 			if err != nil {
 				_ = b.SendMessage(
 					upd.Message.Chat.ID,
