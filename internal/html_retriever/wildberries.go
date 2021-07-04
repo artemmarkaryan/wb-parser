@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
 
 type WildberriesHtmlRetriever struct{}
 
-func (r WildberriesHtmlRetriever) configureRequest(sku domain.Sku) (req *http.Request, err error){
+func (r WildberriesHtmlRetriever) configureRequest(sku domain.Sku) (req *http.Request, err error) {
 	req = &http.Request{
 		Method: "GET",
 		Host:   "www.wildberries.ru",
@@ -28,7 +29,8 @@ func (r WildberriesHtmlRetriever) configureRequest(sku domain.Sku) (req *http.Re
 	return
 }
 
-func (r WildberriesHtmlRetriever) GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
+func (r WildberriesHtmlRetriever) GetHTML(sku domain.Sku, httpClient *http.Client) (body *domain.HtmlBody, err error) {
+
 	req, err := r.configureRequest(sku)
 	if err != nil {
 		return nil, err
@@ -55,5 +57,6 @@ func (r WildberriesHtmlRetriever) GetHTML(sku domain.Sku, httpClient *http.Clien
 		)
 	}
 
-	return bodyBytes, err
+	log.Printf("get html #%v: %v", sku.Id, resp.StatusCode)
+	return (*domain.HtmlBody)(&bodyBytes), err
 }

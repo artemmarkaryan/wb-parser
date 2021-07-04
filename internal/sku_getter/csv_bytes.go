@@ -9,17 +9,21 @@ import (
 )
 
 // get sku instances from file content
-type csvBytesSkuGetter struct {}
+type csvBytesSkuGetter struct{}
 
 func NewCSVBytesSkuGetter() *csvBytesSkuGetter {
 	return &csvBytesSkuGetter{}
 }
-func (g csvBytesSkuGetter) GetSkus(data *[]byte) (skus []domain.Sku, err error) {
+
+func (g csvBytesSkuGetter) GetSkus(data *[]byte) (*[]domain.Sku, error) {
+	var skus []domain.Sku
+	var err error
+
 	reader := csv.NewReader(bytes.NewReader(*data))
 	reader.Comma = ';'
 	skuStrings, err := reader.ReadAll()
 	if err != nil {
-		return
+		return &skus, err
 	}
 
 	for _, record := range skuStrings {
@@ -32,5 +36,5 @@ func (g csvBytesSkuGetter) GetSkus(data *[]byte) (skus []domain.Sku, err error) 
 		})
 	}
 
-	return
+	return &skus, err
 }

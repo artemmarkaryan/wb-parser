@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"github.com/artemmarkaryan/wb-parser/internal/controller"
+	"github.com/artemmarkaryan/wb-parser/internal/controller/ozon"
 	t "github.com/artemmarkaryan/wb-parser/pkg/telebotapi"
 	"log"
 	"os"
@@ -41,7 +41,7 @@ func Poll(b t.Bot) {
 			}
 
 			_ = b.SendMessage(upd.Message.Chat.ID, "Начал обработку")
-			buff, err := controller.NewWildberriesController().ProcessBytes(&content)
+			buff, err := ozon.NewOzonController().Process(&content)
 			if err != nil {
 				_ = b.SendMessage(
 					upd.Message.Chat.ID,
