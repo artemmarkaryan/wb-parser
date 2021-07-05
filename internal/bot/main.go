@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"github.com/artemmarkaryan/wb-parser/internal/controller/ozon"
+	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	t "github.com/artemmarkaryan/wb-parser/pkg/telebotapi"
 	"log"
 	"os"
@@ -27,7 +27,6 @@ func Poll(b t.Bot) {
 					log.Print(err)
 				}
 			}
-
 			f, err := b.GetFile(upd.Message.Document.FileId)
 			if err != nil {
 				log.Print(err.Error())
@@ -41,7 +40,7 @@ func Poll(b t.Bot) {
 			}
 
 			_ = b.SendMessage(upd.Message.Chat.ID, "Начал обработку")
-			buff, err := ozon.NewOzonController().Process(&content)
+			buff, err := controller.ProcessData(&content)
 			if err != nil {
 				_ = b.SendMessage(
 					upd.Message.Chat.ID,

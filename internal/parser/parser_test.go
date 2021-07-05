@@ -12,7 +12,7 @@ func TestGetInfo(t *testing.T) {
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 
 	t.Logf("bytes: %v", string(bodyBytes[:100]))
-	infos, err := WildberriesParser{}.GetInfo(bodyBytes)
+	infos, err := GetInfo(bodyBytes)
 
 	for title, value := range infos {
 		t.Logf("{%q: %q}", title, value)
