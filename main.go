@@ -15,9 +15,4 @@ func main() {
 	b := bot.NewBot()
 	go bot.Poll(b)
 	select {}
-
-	//log.Print(controller.ProcessFile(
-	//	"/Users/artemmarkaryan/Downloads/l.csv",
-	//	"/Users/artemmarkaryan/Downloads/q3123423.csv",
-	//))
 }
