@@ -26,10 +26,16 @@ func (r OzonHtmlRetriever) configureRequest(sku domain.Sku) (req *http.Request, 
 		return nil, err
 	}
 	req.Header = http.Header{
-		"User-Agent":      []string{"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:89.0) Gecko/20100101 Firefox/89.0"},
-		"Accept":          []string{"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
-		"Accept-Encoding": []string{"gzip,deflate,br"},
-		"Connection":      []string{"keep-alive"},
+		"User-Agent":                []string{"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:89.0) Gecko/20100101 Firefox/89.0"},
+		"Accept":                    []string{"*/*"},
+		"Accept-Encoding":           []string{"gzip,deflate,br"},
+		"Accept-Language":           []string{"en-US,en;q=0.5"},
+		"Cache-Control":             []string{"no-cache"},
+		"Connection":                []string{"keep-alive"},
+		"TE":                        []string{"trailers"},
+		"Upgrade-Insecure-Requests": []string{"1"},
+		"DNT":                       []string{"1"},
+		"Referer":                   []string{sku.GetUrl()},
 	}
 	return
 }

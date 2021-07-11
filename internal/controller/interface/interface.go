@@ -16,13 +16,13 @@ type IController interface {
 		sku chan domain.Sku,        // read
 		html chan *domain.HtmlBody, // write
 		err chan error,             // write
-		syncMap *sync.Map,
+		wg *sync.WaitGroup,
 	)
 	ParseHTML(
 		html chan *domain.HtmlBody, // read
 		info chan *domain.Info,     // write
 		err chan error,             // write
-		syncMap *sync.Map,
+		wg *sync.WaitGroup,
 	)
 	Export(
 		ctx context.Context,

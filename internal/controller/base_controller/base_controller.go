@@ -31,6 +31,24 @@ func (r *BaseController) SetParserPoolSize(size uint8) {
 	r.parserPoolSize = size
 }
 
+func (r *BaseController) getConnectionPoolSize(max uint8) uint8 {
+	if max < r.connectionPoolSize {
+		return max
+	} else {
+		return r.connectionPoolSize
+	}
+}
+
+func (r *BaseController) getParserPoolSize(max uint8) uint8 {
+	if max < r.parserPoolSize {
+		return max
+	} else {
+		return r.parserPoolSize
+	}
+}
+
+
+
 // Process описывает логику парсера
 // Конкретные функции реализованы в r.realController
 func (r BaseController) Process(data *[]byte) (*bytes.Buffer, error) {
@@ -53,39 +71,48 @@ func (r BaseController) Process(data *[]byte) (*bytes.Buffer, error) {
 	htmlCh := make(chan *domain.HtmlBody)
 	buffCh := make(chan *bytes.Buffer)
 
-	syncMap := sync.Map{}
-
 	// Requesting
-	clientCtx := context.WithValue(
-		ctx,
-		"client",
-		makeHTTPClient.NewHTTPClient(len(*skus)),
-	)
+	clientCtx := context.WithValue(ctx, "client", makeHTTPClient.NewHTTPClient(len(*skus)))
+	requestWG := sync.WaitGroup{}
 	requestErrCh := make(chan error, len(*skus))
-	for i := uint8(0); i < r.connectionPoolSize; i++ {
+	for i := uint8(0); i < r.getConnectionPoolSize(uint8(len(*skus))); i++ {
+		requestWG.Add(1)
 		go r.realController.Request(
 			clientCtx,
 			skuCh,
 			htmlCh, // используется в Parsing
 			requestErrCh,
-			&syncMap,
+			&requestWG,
 		)
 	}
 
 	// Parsing
 	parseErrCh := make(chan error, len(*skus))
-	for i := uint8(0); i < r.parserPoolSize; i++ {
+	parseWG := sync.WaitGroup{}
+	for i := uint8(0); i < r.getParserPoolSize(uint8(len(*skus))); i++ {
+		parseWG.Add(1)
 		go r.realController.ParseHTML(
 			htmlCh,
 			infoCh, // используется в Exporting
 			parseErrCh,
-			&syncMap,
+			&parseWG,
 		)
 	}
 
 	// Exporting
 	exportErrCh := make(chan error, 1)
 	go r.realController.Export(ctx, infoCh, buffCh, exportErrCh)
+
+	// Sync
+	go func() {
+		requestWG.Wait()
+		close(htmlCh)
+	}()
+
+	go func() {
+		parseWG.Wait()
+		close(infoCh)
+	}()
 
 	select {
 	case buff := <-buffCh:

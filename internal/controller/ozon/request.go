@@ -17,7 +17,7 @@ func (c ozonController) Request(
 	skuCh chan domain.Sku,        // read
 	htmlCh chan *domain.HtmlBody, // write
 	errCh chan error,             // write
-	syncMap *sync.Map,
+	wg *sync.WaitGroup,
 ) {
 	var clientErr error
 	retriever := html_retriever.OzonHtmlRetriever{}
@@ -28,18 +28,23 @@ func (c ozonController) Request(
 		log.Panic(clientErr)
 	}
 
-	select {
-	case sku, open := <-skuCh:
-		if !open {
-			break
-		}
-		htmlBodyBytes, err := retriever.GetHTML(sku, client)
-		log.Printf("recieved from %v", sku.GetId())
-		htmlBody := domain.HtmlBody(htmlBodyBytes)
-		if err != nil {
-			errCh <- err
-		} else {
-			htmlCh <- &htmlBody
+loop:
+	for {
+		select {
+		case sku, open := <-skuCh:
+			if !open {
+				break loop
+			}
+			htmlBodyBytes, err := retriever.GetHTML(sku, client)
+			htmlBody := domain.HtmlBody(htmlBodyBytes)
+			if err != nil {
+				errCh <- err
+			} else {
+				htmlCh <- &htmlBody
+			}
+
 		}
 	}
+
+	wg.Done()
 }

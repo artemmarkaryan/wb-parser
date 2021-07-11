@@ -2,7 +2,6 @@ package ozon
 
 import (
 	"github.com/artemmarkaryan/wb-parser/internal/domain"
-	"log"
 	"sync"
 )
 
@@ -10,15 +9,18 @@ func (c ozonController) ParseHTML(
 	htmlCh chan *domain.HtmlBody, // read
 	infoCh chan *domain.Info,     // write
 	errorCh chan error,           // write
-	syncMap *sync.Map,
+	wg *sync.WaitGroup,
 ) {
-	select {
-	case html, open := <-htmlCh:
-		if !open {
-			syncMap.
-			break
+loop:
+	for {
+		select {
+		case html, open := <-htmlCh:
+			if !open {
+				break loop
+			}
+			infoCh <- &domain.Info{"html": string(*html)}
 		}
-		log.Print((*html)[:1])
-		infoCh <- &domain.Info{}
 	}
+
+	wg.Done()
 }

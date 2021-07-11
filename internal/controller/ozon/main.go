@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const poolSize = 10
+const poolSize = 2
 const coolDown = time.Second / 100
 
 type ozonController struct {
@@ -22,6 +22,6 @@ func NewOzonController() *base_controller.BaseController {
 	)
 }
 
-func (r ozonController) parse(data *[]byte) (infoArr []domain.Info) {
+func (c ozonController) parse(data *[]byte) (infoArr []domain.Info) {
 	return
 }
