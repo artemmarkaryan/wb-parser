@@ -90,21 +90,21 @@ func parse(getter interactor.SkuGetter) (infoArr []Info) {
 				log.Printf("goroutine #%v: sku #%v", num, sku.GetId())
 				time.Sleep(coolDown)
 			}
-		}(skuCh, infoCh, errCh)
+		} (skuCh, infoCh, errCh)
 	} // get sku from channel; put to result channels
 
 	var rcv int
 	// read from result channel
 	for rcv < len(allSku) {
-		select {
-		case i := <-infoCh:
-			infoArr = append(infoArr, i)
-			rcv++
-		case e := <-errCh:
-			log.Print(e.Error())
-			rcv++
+			select {
+			case i := <-infoCh:
+				infoArr = append(infoArr, i)
+				rcv++
+			case e := <-errCh:
+				log.Print(e.Error())
+				rcv++
+			}
 		}
-	}
 
 	return
 }
