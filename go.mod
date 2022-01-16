@@ -1,7 +1,7 @@
 module github.com/artemmarkaryan/wb-parser
 
-// +heroku goVersion 1.16
-go 1.16
+// +heroku goVersion 1.17
+go 1.17
 
 require (
 	github.com/PuerkitoBio/goquery v1.6.1
