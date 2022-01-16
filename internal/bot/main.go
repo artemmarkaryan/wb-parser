@@ -4,11 +4,12 @@ import (
 	"github.com/artemmarkaryan/wb-parser/internal/controller"
 	t "github.com/artemmarkaryan/wb-parser/pkg/telebotapi"
 	"log"
+	"os"
 	"time"
 )
 
 func NewBot() t.Bot {
-	return t.Bot{Token: "1780566572:AAGo452wn9oot8AwMNW4q8KVYF9SdfXndJ0"}
+	return t.Bot{Token: os.Getenv("BOT_TOKEN")}
 }
 
 func Poll(b t.Bot) {

@@ -1,4 +1,3 @@
-// interactor is an interface to database
 package interactor
 
 import (
@@ -14,12 +13,10 @@ import (
 	"strconv"
 )
 
-// get sku instances from some source
 type SkuGetter interface {
 	GetSkus() ([]domain.Sku, error)
 }
 
-// get sku instances from file
 type CSVFileSkuGetter struct {
 	filename string
 }
@@ -56,7 +53,6 @@ func (g CSVFileSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	return
 }
 
-// get sku instances from file content
 type CSVBytesSkuGetter struct {
 	data []byte
 }
@@ -86,11 +82,7 @@ func (g CSVBytesSkuGetter) GetSkus() (skus []domain.Sku, err error) {
 	return
 }
 
-
-// retrieve html data
 func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
-	//log.Printf("requesting %v", sku.GetUrl())
-
 	req := http.Request{
 		Method: "GET",
 		Host:   "www.wildberries.ru",
@@ -101,7 +93,7 @@ func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
 	}
 	req.Header = http.Header{
 		"User-Agent": []string{"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0"},
-		"Accept": []string{"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
+		"Accept":     []string{"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
 		"Connection": []string{"keep-alive"},
 	}
 	resp, err := httpClient.Do(&req)
@@ -128,4 +120,3 @@ func GetHTML(sku domain.Sku, httpClient *http.Client) (body []byte, err error) {
 
 	return bodyBytes, err
 }
-

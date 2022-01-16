@@ -8,6 +8,8 @@ import (
 
 func main() {
 	log.Print("Running")
+	defer log.Print("Stopping")
+
 	err := config.LoadDotEnv()
 	if err != nil {
 		log.Println(err.Error())
@@ -16,10 +18,4 @@ func main() {
 	b := bot.NewBot()
 	go bot.Poll(b)
 	select {}
-
-	log.Print("Stopping")
-	//log.Print(controller.ProcessFile(
-	//	"/Users/artemmarkaryan/Downloads/l.csv",
-	//	"/Users/artemmarkaryan/Downloads/q3123423.csv",
-	//))
 }

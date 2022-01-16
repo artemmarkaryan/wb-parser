@@ -8,4 +8,5 @@ type Sku struct {
 }
 
 func (s *Sku) GetId() string { return s.Id }
+
 func (s *Sku) GetUrl() string { return strings.Trim(s.Url, " \n\r") }
